@@ -72,6 +72,22 @@ func classify(in string) string {
 		return "House"
 	case strings.Contains(in, " PROPERTY TAX"):
 		return "House"
+	case strings.Contains(in, "Smart Move Online"):
+		return "Savings"
+	case strings.Contains(in, " Google Ireland Limited"):
+		return "Pay"
+	case strings.Contains(in, "SCT Peter Nuttall & Laura Nuttall"):
+		return "Savings"
+	case strings.Contains(in, "STO SCT Peter Nuttall"):
+		return "Savings"
+	case strings.Contains(in, "STO SCT Peter and Laura Nuttall"):
+		return "Savings"
+	case strings.Contains(in, "STO SCT Laura Nuttall"):
+		return "Savings"
+	case strings.Contains(in, "KBC Mobile : Extra Regular Saver"):
+		return "Savings"
+	case strings.Contains(in, "PAYPAL COMPULABLTD"):
+		return "Computers"
 
 	default:
 		return ""
