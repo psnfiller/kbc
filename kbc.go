@@ -107,6 +107,7 @@ func main() {
 		log.Fatal(err)
 	}
 	var balance decimal.Decimal
+	var sum decimal.Decimal
 	for i, r := range rows {
 		if i == 0 {
 			balance = r.balance
@@ -122,5 +123,7 @@ func main() {
 		if diff.GreaterThan(decimal.NewFromFloat(500)) || diff.LessThan(decimal.NewFromFloat(-500)) {
 			fmt.Println(r)
 		}
+		sum = sum.Add(r.change)
 	}
+	fmt.Println(sum)
 }
