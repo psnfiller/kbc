@@ -94,14 +94,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var balance int
+	var balance float64
 	for i, r := range rows {
 		if i == 0 {
 			balance = r.balance
 			fmt.Println(r)
 			continue
 		}
-		diff := balance - r.balance
+		diff := r.balance - balance
 		if i < 10 {
 			fmt.Println(diff)
 		}
