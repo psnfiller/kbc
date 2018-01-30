@@ -64,7 +64,6 @@ func parseLine(line string) (row, error) {
 func decomma(in string) (float64, error) {
 	x := strings.Replace(in, ",", "", -1)
 	return strconv.ParseFloat(x, 64)
-
 }
 
 func parseDoc(fd io.Reader) ([]row, error) {
@@ -95,7 +94,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, r := range rows {
-		fmt.Println(r)
+	var balance int
+	for i, r := range rows {
+		if i == 0 {
+			balance = r.balance
+			fmt.Println(r)
+			continue
+		}
+		diff := balance - r.balance
+		if i < 10 {
+			fmt.Println(diff)
+		}
 	}
 }
