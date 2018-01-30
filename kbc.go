@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	re := regexp.MustCompile(`\s+\d\d [A-Z][a-z]{2} 2017`)
+	re := regexp.MustCompile(`\s+(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s`)
 	f := "/Users/psn/Downloads/wat/Current Account Statement - 01 Oct 2017.txt"
 	fd, err := os.Open(f)
 	defer fd.Close()
@@ -19,9 +19,11 @@ func main() {
 	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if re.FindString(line) != "" {
-			fmt.Println(line)
+		l := re.FindStringSubmatch(line)
+		if l == nil {
+			continue
 		}
+		fmt.Printf("%s %s\n", l[1], l[2])
 
 	}
 	if err := scanner.Err(); err != nil {
