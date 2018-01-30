@@ -139,6 +139,7 @@ func main() {
 	var balance decimal.Decimal
 	var sum decimal.Decimal
 	var classified decimal.Decimal
+	buckets := make(map[string]decimal.Decimal)
 	for i, r := range rows {
 		if i == 0 {
 			balance = r.balance
@@ -159,6 +160,9 @@ func main() {
 		if r.class != "" {
 			classified = classified.Add(r.change)
 		}
+		b := buckets[r.class]
+		buckets[r.class] = b.Add(r.diff)
 	}
 	fmt.Printf("%s %s %s%%\n", sum, classified, classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
+	fmt.Println(buckets)
 }
