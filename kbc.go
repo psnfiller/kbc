@@ -82,6 +82,13 @@ func classify(in string) string {
 		return "House"
 	case strings.Contains(in, "EIRCOM"):
 		return "House"
+	case strings.Contains(in, "EIR"):
+		return "House"
+	case strings.Contains(in, "IRISH LIFE"):
+		return "House"
+
+	case strings.Contains(in, "BROWN THOMAS"):
+		return "House stuff"
 
 	case strings.Contains(in, "POS TESCO STORE"):
 		return "Food"
@@ -101,9 +108,47 @@ func classify(in string) string {
 		return "Food"
 	case strings.Contains(in, "FX BUCKLEY BUTCHERS"):
 		return "Food"
+	case strings.Contains(in, "3FE"):
+		return "Food"
+	case strings.Contains(in, "LIDL"):
+		return "Food"
+	case strings.Contains(in, "PAYPAL HAS BEAN"):
+		return "Food"
 
 	case strings.Contains(in, "THE TRAMYARD KITCHEN"):
 		return "meals out"
+	case strings.Contains(in, "CHAKRA BY JAIPUR"):
+		return "meals out"
+	case strings.Contains(in, "The Pigeon House Del"):
+		return "meals out"
+	case strings.Contains(in, "THE WATERLOO BAR"):
+		return "meals out"
+	case strings.Contains(in, "Just Eat"):
+		return "meals out"
+	case strings.Contains(in, "MANGO TREE GREYSTONE"):
+		return "meals out"
+	case strings.Contains(in, "HORSE HOUND"):
+		return "meals out"
+	case strings.Contains(in, "BOMBAY P"):
+		return "meals out"
+
+	case strings.Contains(in, "O BRIENS WINES"):
+		return "booze"
+
+	case strings.Contains(in, "POS GREAT OUTDOORS"):
+		return "clothes"
+	case strings.Contains(in, "HOTMILK LINGERIE"):
+		return "clothes"
+
+	case strings.Contains(in, "Footprints Montessori"):
+		return "childcare"
+
+	case strings.Contains(in, "MOTHERCARE"):
+		return "baby clothes"
+	case strings.Contains(in, "JOJOMAMANBEBE.CO.U"):
+		return "baby clothes"
+	case strings.Contains(in, "JOJO MAMAN BEBE"):
+		return "baby clothes"
 
 	case strings.Contains(in, " Google Ireland Limited"):
 		return "Pay"
@@ -131,6 +176,31 @@ func classify(in string) string {
 		return "Computers"
 	case strings.Contains(in, "GITHUB.COM"):
 		return "Computers"
+	case strings.Contains(in, "PAYPAL TARSNAPCOM"):
+		return "Computers"
+	case strings.Contains(in, "PROJECT ALLOY"):
+		return "Computers"
+	case strings.Contains(in, "PAYPAL LETSENCRYPT"):
+		return "Computers"
+	case strings.Contains(in, "PAYPAL FREEPRESS"):
+		return "Computers"
+	case strings.Contains(in, "PAYPAL OPENBSDFOUN"):
+		return "Computers"
+	case strings.Contains(in, "ZAZZLE"):
+		return "Computers"
+
+	case strings.Contains(in, "GOOGLE Google Music"):
+		return "Music"
+	case strings.Contains(in, "ITUNES.COMBILL"):
+		return "Music"
+
+	case strings.Contains(in, "IRISH RAIL"):
+		return "Dart"
+
+	case strings.Contains(in, "THE HAPPY PEAR"):
+		return "Coffee"
+	case strings.Contains(in, "COFFEEANGEL"):
+		return "Coffee"
 
 	case strings.HasPrefix(in, "ATM"):
 		return "Cash"
@@ -147,6 +217,8 @@ func classify(in string) string {
 		return "Amazon"
 	case strings.HasPrefix(in, "AMAZON EU"):
 		return "Amazon"
+	case strings.Contains(in, "AMAZON"):
+		return "Amazon"
 
 	case strings.Contains(in, "VODAFONE"):
 		return "phone"
@@ -157,6 +229,12 @@ func classify(in string) string {
 		return "medical"
 	case strings.Contains(in, "McGleenans Pharmacy"):
 		return "medical"
+	case strings.Contains(in, "MEDICARE"):
+		return "medical"
+	case strings.Contains(in, "HAPPYHEARTCOURSECOM"):
+		return "medical"
+	case strings.Contains(in, "GREYSTONES HARBOUR F"):
+		return "medical"
 
 	case strings.Contains(in, "DUBRAY BOOKS"):
 		return "books"
@@ -164,6 +242,26 @@ func classify(in string) string {
 		return "books"
 	case strings.Contains(in, "WATERSTONES"):
 		return "books"
+	case strings.Contains(in, "Bridge Street Books"):
+		return "books"
+	case strings.Contains(in, "EASONS"):
+		return "books"
+
+	case strings.Contains(in, "INTERFLORA"):
+		return "flowers"
+	case strings.Contains(in, "COTTAGE FLOWER"):
+		return "flowers"
+
+	case strings.Contains(in, "AN POST-OFFICES"):
+		return "flowers"
+
+	case strings.Contains(in, "APPLEGREEN MOTORWAY"):
+		return "fuel"
+
+	case strings.Contains(in, "PARCEL MOTEL"):
+		return "parcel motel"
+	case strings.Contains(in, "PARCELMOTEL"):
+		return "parcel motel"
 
 	default:
 		return defaultClass
@@ -226,14 +324,14 @@ func main() {
 		if !diff.Equal(r.change) && !diff.Equal(invert) {
 			log.Fatal(r, "s", diff, r.change, r.change.Mul(decimal.NewFromFloat(-1)))
 		}
-		r.diff = diff
+		rows[i].diff = diff
 		balance = r.balance
 	}
 	sort.Slice(rows, func(a, b int) bool {
 		return rows[a].diff.GreaterThan(rows[b].diff)
 	})
-	for _, r := range rows {
 
+	for _, r := range rows {
 		t := 5.
 		diff := r.diff
 		if (diff.GreaterThan(decimal.NewFromFloat(t)) || diff.LessThan(decimal.NewFromFloat(-t))) && r.class == defaultClass {
@@ -244,10 +342,21 @@ func main() {
 			classified = classified.Add(r.change)
 		}
 		b := buckets[r.class]
-		buckets[r.class] = b.Add(r.diff)
+		buckets[r.class] = b.Add(diff)
 	}
 	fmt.Printf("%s %s %s%%\n", sum, classified, classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
-	for b, d := range buckets {
-		fmt.Println(b, d)
+	type bucks struct {
+		name  string
+		value decimal.Decimal
+	}
+	var b []bucks
+	for bb, d := range buckets {
+		b = append(b, bucks{bb, d})
+	}
+	sort.Slice(b, func(a, bb int) bool {
+		return b[a].value.LessThan(b[bb].value)
+	})
+	for _, x := range b {
+		fmt.Printf("%s\t%s\n", x.name, x.value)
 	}
 }
