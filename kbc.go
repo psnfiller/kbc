@@ -48,7 +48,7 @@ func parseLine(line string) (row, error) {
 	}
 	out.date = d
 	out.item = strings.TrimSpace(item)
-	c, err := decimal.NewFromString(change)
+	c, err := decomma(change)
 	if err != nil {
 		log.Print(err)
 		return out, ErrNoMatch
