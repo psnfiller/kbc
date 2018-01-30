@@ -26,6 +26,7 @@ type row struct {
 	change  decimal.Decimal
 	diff    decimal.Decimal
 	balance decimal.Decimal
+	class   string
 }
 
 func (r row) String() string {
@@ -61,7 +62,17 @@ func parseLine(line string) (row, error) {
 		return out, ErrFloat
 	}
 	out.balance = b
+	out.class = classify(out.item)
 	return out, nil
+}
+
+func classify(in string) string {
+	switch in {
+	case "SDD KBC Bank Ireland Public Limited":
+		return "Mortgage"
+	default:
+		return ""
+	}
 }
 
 func decomma(in string) (decimal.Decimal, error) {
@@ -108,6 +119,7 @@ func main() {
 	}
 	var balance decimal.Decimal
 	var sum decimal.Decimal
+	var classified decimal.Decimal
 	for i, r := range rows {
 		if i == 0 {
 			balance = r.balance
@@ -124,6 +136,9 @@ func main() {
 			fmt.Println(r)
 		}
 		sum = sum.Add(r.change)
+		if r.class != "" {
+			classified = classified.Add(r.change)
+		}
 	}
-	fmt.Println(sum)
+	fmt.Println(sum, classified, classified.Div(sum))
 }
