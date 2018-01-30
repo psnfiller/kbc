@@ -22,6 +22,7 @@ type row struct {
 	date    time.Time
 	item    string
 	change  float64
+	diff    float64
 	balance float64
 }
 
@@ -105,6 +106,7 @@ func main() {
 		if i < 10 {
 			fmt.Println(r.item, diff, r.balance)
 		}
+		r.diff = diff
 		balance = r.balance
 	}
 }
