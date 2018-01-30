@@ -110,7 +110,6 @@ func main() {
 	for i, r := range rows {
 		if i == 0 {
 			balance = r.balance
-			fmt.Println(r)
 			continue
 		}
 		diff := r.balance.Sub(balance)
@@ -120,7 +119,7 @@ func main() {
 		}
 		r.diff = diff
 		balance = r.balance
-		if diff.GreaterThan(decimal.NewFromFloat(1000)) || diff.LessThan(decimal.NewFromFloat(-1000)) {
+		if diff.GreaterThan(decimal.NewFromFloat(500)) || diff.LessThan(decimal.NewFromFloat(-500)) {
 			fmt.Println(r)
 		}
 	}
