@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -124,6 +125,12 @@ func classify(in string) string {
 		return "Computers"
 	case strings.Contains(in, "APPLE ONLINE STORE"):
 		return "Computers"
+	case strings.Contains(in, "GOOGLE CLOUD"):
+		return "Computers"
+	case strings.Contains(in, "LASTPASS.COM"):
+		return "Computers"
+	case strings.Contains(in, "GITHUB.COM"):
+		return "Computers"
 
 	case strings.HasPrefix(in, "ATM"):
 		return "Cash"
@@ -221,7 +228,14 @@ func main() {
 		}
 		r.diff = diff
 		balance = r.balance
+	}
+	sort.Slice(rows, func(a, b int) bool {
+		return rows[a].diff.GreaterThan(rows[b].diff)
+	})
+	for _, r := range rows {
+
 		t := 5.
+		diff := r.diff
 		if (diff.GreaterThan(decimal.NewFromFloat(t)) || diff.LessThan(decimal.NewFromFloat(-t))) && r.class == defaultClass {
 			fmt.Println(r)
 		}
