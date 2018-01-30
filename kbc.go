@@ -105,6 +105,9 @@ func main() {
 		diff := r.balance - balance
 		if i < 10 {
 			fmt.Println(r.item, diff, r.balance)
+			if diff != r.change && diff != -r.change {
+				log.Fatal(r, diff, r.change)
+			}
 		}
 		r.diff = diff
 		balance = r.balance
