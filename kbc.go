@@ -16,7 +16,7 @@ import (
 
 var (
 	ErrNoMatch = errors.New("nope")
-	re         = regexp.MustCompile(`\s+(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+(\d+\.\d+)\s\s+([,0-9]+\.\d+)`)
+	re         = regexp.MustCompile(`\s+(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
 )
 
 type row struct {
@@ -106,8 +106,10 @@ func main() {
 		diff := r.balance.Sub(balance)
 		if i < 10 {
 			fmt.Println(r.item, diff, r.balance)
-			if diff != r.change && diff != r.change.Mul(decimal.NewFromFloat(-1)) {
-				log.Fatal(r, diff, r.change)
+
+			invert := r.change.Mul(decimal.NewFromFloat(-1))
+			if !diff.Equal(r.change) && !diff.Equal(invert) {
+				log.Fatal(r, "s", diff, r.change, r.change.Mul(decimal.NewFromFloat(-1)))
 			}
 		}
 		r.diff = diff
