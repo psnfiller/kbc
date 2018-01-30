@@ -106,11 +106,11 @@ func main() {
 		diff := r.balance.Sub(balance)
 		if i < 10 {
 			fmt.Println(r.item, diff, r.balance)
+		}
 
-			invert := r.change.Mul(decimal.NewFromFloat(-1))
-			if !diff.Equal(r.change) && !diff.Equal(invert) {
-				log.Fatal(r, "s", diff, r.change, r.change.Mul(decimal.NewFromFloat(-1)))
-			}
+		invert := r.change.Mul(decimal.NewFromFloat(-1))
+		if !diff.Equal(r.change) && !diff.Equal(invert) {
+			log.Fatal(r, "s", diff, r.change, r.change.Mul(decimal.NewFromFloat(-1)))
 		}
 		r.diff = diff
 		balance = r.balance
