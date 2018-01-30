@@ -75,6 +75,7 @@ func parseDoc(fd io.Reader, rejects io.Writer) ([]row, error) {
 		line := scanner.Text()
 		r, err := parseLine(line)
 		if err == ErrNoMatch {
+			rejects.Write([]byte(line + "\n"))
 			continue
 		}
 		if err != nil {
