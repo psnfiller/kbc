@@ -8,9 +8,10 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 var (
@@ -47,7 +48,7 @@ func parseLine(line string) (row, error) {
 	}
 	out.date = d
 	out.item = strings.TrimSpace(item)
-	c, err := strconv.ParseFloat(change, 64)
+	c, err := decimal.NewFromString(change)
 	if err != nil {
 		log.Print(err)
 		return out, ErrNoMatch
@@ -62,9 +63,9 @@ func parseLine(line string) (row, error) {
 	return out, nil
 }
 
-func decomma(in string) (float64, error) {
+func decomma(in string) (decimal.Decimal, error) {
 	x := strings.Replace(in, ",", "", -1)
-	return strconv.ParseFloat(x, 64)
+	return decimal.NewFromString(x)
 }
 
 func parseDoc(fd io.Reader) ([]row, error) {
@@ -95,17 +96,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var balance float64
+	var balance decimal.Decimal
 	for i, r := range rows {
 		if i == 0 {
 			balance = r.balance
 			fmt.Println(r)
 			continue
 		}
-		diff := r.balance - balance
+		diff := r.balance.Sub(balance)
 		if i < 10 {
 			fmt.Println(r.item, diff, r.balance)
-			if diff != r.change && diff != -r.change {
+			if diff != r.change && diff != r.change.Mul(decimal.NewFromFloat(-1)) {
 				log.Fatal(r, diff, r.change)
 			}
 		}
