@@ -140,5 +140,5 @@ func main() {
 			classified = classified.Add(r.change)
 		}
 	}
-	fmt.Printf("%s %s %s%%\n", sum, classified, classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 10))
+	fmt.Printf("%s %s %s%%\n", sum, classified, classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
 }
