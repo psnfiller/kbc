@@ -4,11 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 )
 
 func main() {
 	f := "/Users/psn/Downloads/wat/Current Account Statement - 01 Oct 2017.txt"
-	fd, err := s.Open(f)
+	fd, err := os.Open(f)
 	defer fd.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -21,5 +22,4 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmr.Println("vim-go")
 }
