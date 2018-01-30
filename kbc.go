@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 )
 
 func main() {
+	re := regexp.MustCompile(`\s+\d\d Oct 2017`)
 	f := "/Users/psn/Downloads/wat/Current Account Statement - 01 Oct 2017.txt"
 	fd, err := os.Open(f)
 	defer fd.Close()
@@ -16,7 +18,11 @@ func main() {
 	}
 	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+		line := scanner.Text()
+		if re.FindString(line) != "" {
+			fmt.Println(line)
+		}
+
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
