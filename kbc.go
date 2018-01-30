@@ -67,9 +67,12 @@ func parseLine(line string) (row, error) {
 }
 
 func classify(in string) string {
-	switch in {
-	case "SDD KBC Bank Ireland Public Limited":
-		return "Mortgage"
+	switch {
+	case in == "SDD KBC Bank Ireland Public Limited":
+		return "House"
+	case strings.Contains(in, " PROPERTY TAX"):
+		return "House"
+
 	default:
 		return ""
 	}
@@ -132,7 +135,8 @@ func main() {
 		}
 		r.diff = diff
 		balance = r.balance
-		if diff.GreaterThan(decimal.NewFromFloat(500)) || diff.LessThan(decimal.NewFromFloat(-500)) {
+		t := 500.
+		if (diff.GreaterThan(decimal.NewFromFloat(t)) || diff.LessThan(decimal.NewFromFloat(-t))) && r.class == "" {
 			fmt.Println(r)
 		}
 		sum = sum.Add(r.change)
