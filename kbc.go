@@ -25,6 +25,10 @@ type row struct {
 	balance float64
 }
 
+func (r row) String() string {
+	return fmt.Sprintf("%s %s %v %v", r.date.Format("2006-01-02"), r.item, r.change, r.balance)
+}
+
 func parseLine(line string) (row, error) {
 	out := row{}
 	l := re.FindStringSubmatch(line)
