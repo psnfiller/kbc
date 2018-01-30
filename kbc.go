@@ -68,7 +68,7 @@ func decomma(in string) (decimal.Decimal, error) {
 	return decimal.NewFromString(x)
 }
 
-func parseDoc(fd io.Reader) ([]row, error) {
+func parseDoc(fd io.Reader, rejects io.Writer) ([]row, error) {
 	var out []row
 	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
@@ -92,7 +92,16 @@ func main() {
 	f := "/Users/psn/Downloads/wat/Current Account Statement - 01 Oct 2017.txt"
 	fd, err := os.Open(f)
 	defer fd.Close()
-	rows, err := parseDoc(fd)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rejects, err := os.Create("rejects")
+	defer rejects.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rows, err := parseDoc(fd, rejects)
 	if err != nil {
 		log.Fatal(err)
 	}
