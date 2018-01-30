@@ -73,10 +73,42 @@ func classify(in string) string {
 		return "House"
 	case strings.Contains(in, " PROPERTY TAX"):
 		return "House"
-	case strings.Contains(in, "Smart Move Online"):
-		return "Savings"
+	case strings.Contains(in, "POS THORNTONS RECYCLING"):
+		return "House"
+	case strings.Contains(in, "SDD ELECTRIC IRELAND"):
+		return "House"
+	case strings.Contains(in, "Flogas Natural Gas"):
+		return "House"
+	case strings.Contains(in, "EIRCOM"):
+		return "House"
+
+	case strings.Contains(in, "POS TESCO STORE"):
+		return "Food"
+	case strings.Contains(in, "POS FARRELLYS"):
+		return "Food"
+	case strings.Contains(in, "POS THE DELGANY GROCER"):
+		return "Food"
+	case strings.Contains(in, "POS WWW.BRITISHFINEFOODS"):
+		return "Food"
+	case strings.Contains(in, "POS SHERIDANS CHEESEMONG"):
+		return "Food"
+	case strings.Contains(in, "FIREHOUSE BAKERY"):
+		return "Food"
+	case strings.Contains(in, "MINI MARKET DELGANY"):
+		return "Food"
+	case strings.Contains(in, "THE BEAR PAW DELI"):
+		return "Food"
+	case strings.Contains(in, "FX BUCKLEY BUTCHERS"):
+		return "Food"
+
+	case strings.Contains(in, "THE TRAMYARD KITCHEN"):
+		return "meals out"
+
 	case strings.Contains(in, " Google Ireland Limited"):
 		return "Pay"
+
+	case strings.Contains(in, "Smart Move Online"):
+		return "Savings"
 	case strings.Contains(in, "SCT Peter Nuttall & Laura Nuttall"):
 		return "Savings"
 	case strings.Contains(in, "STO SCT Peter Nuttall"):
@@ -87,8 +119,44 @@ func classify(in string) string {
 		return "Savings"
 	case strings.Contains(in, "KBC Mobile : Extra Regular Saver"):
 		return "Savings"
+
 	case strings.Contains(in, "PAYPAL COMPULABLTD"):
 		return "Computers"
+	case strings.Contains(in, "APPLE ONLINE STORE"):
+		return "Computers"
+
+	case strings.HasPrefix(in, "ATM"):
+		return "Cash"
+
+	case strings.HasPrefix(in, "POS Amazon"):
+		return "Amazon"
+	case strings.HasPrefix(in, "POS AMAZON.CO.UK"):
+		return "Amazon"
+	case strings.HasPrefix(in, "POS AMAZON.UK"):
+		return "Amazon"
+	case strings.HasPrefix(in, "POS AMAZON SVCS EU-UK AM"):
+		return "Amazon"
+	case strings.HasPrefix(in, "AMAZON MKTPLACE PMTS"):
+		return "Amazon"
+	case strings.HasPrefix(in, "AMAZON EU"):
+		return "Amazon"
+
+	case strings.Contains(in, "VODAFONE"):
+		return "phone"
+
+	case strings.Contains(in, "LLOYDSPHARMACY"):
+		return "medical"
+	case strings.Contains(in, "Blackrock Clinic Spe"):
+		return "medical"
+	case strings.Contains(in, "McGleenans Pharmacy"):
+		return "medical"
+
+	case strings.Contains(in, "DUBRAY BOOKS"):
+		return "books"
+	case strings.Contains(in, "The Village Bookshop"):
+		return "books"
+	case strings.Contains(in, "WATERSTONES"):
+		return "books"
 
 	default:
 		return defaultClass
@@ -153,7 +221,7 @@ func main() {
 		}
 		r.diff = diff
 		balance = r.balance
-		t := 250.
+		t := 5.
 		if (diff.GreaterThan(decimal.NewFromFloat(t)) || diff.LessThan(decimal.NewFromFloat(-t))) && r.class == defaultClass {
 			fmt.Println(r)
 		}
