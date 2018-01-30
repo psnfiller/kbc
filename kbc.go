@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -91,6 +92,6 @@ func main() {
 		log.Fatal(err)
 	}
 	for _, r := range rows {
-		log.Print(r)
+		fmt.Println(r)
 	}
 }
