@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	ErrNoMatch = errors.New("nope")
-	ErrFloat   = errors.New("failed to parse float")
-	re         = regexp.MustCompile(`\s+(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
+	ErrNoMatch   = errors.New("nope")
+	ErrFloat     = errors.New("failed to parse float")
+	re           = regexp.MustCompile(`\s+(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
+	defaultClass = "unknown"
 )
 
 type row struct {
@@ -90,7 +91,7 @@ func classify(in string) string {
 		return "Computers"
 
 	default:
-		return ""
+		return defaultClass
 	}
 }
 
@@ -152,17 +153,19 @@ func main() {
 		}
 		r.diff = diff
 		balance = r.balance
-		t := 500.
-		if (diff.GreaterThan(decimal.NewFromFloat(t)) || diff.LessThan(decimal.NewFromFloat(-t))) && r.class == "" {
+		t := 250.
+		if (diff.GreaterThan(decimal.NewFromFloat(t)) || diff.LessThan(decimal.NewFromFloat(-t))) && r.class == defaultClass {
 			fmt.Println(r)
 		}
 		sum = sum.Add(r.change)
-		if r.class != "" {
+		if r.class != defaultClass {
 			classified = classified.Add(r.change)
 		}
 		b := buckets[r.class]
 		buckets[r.class] = b.Add(r.diff)
 	}
 	fmt.Printf("%s %s %s%%\n", sum, classified, classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
-	fmt.Println(buckets)
+	for b, d := range buckets {
+		fmt.Println(b, d)
+	}
 }
