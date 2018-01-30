@@ -16,6 +16,7 @@ import (
 
 var (
 	ErrNoMatch = errors.New("nope")
+	ErrFloat   = errors.New("failed to parse float")
 	re         = regexp.MustCompile(`\s+(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
 )
 
@@ -44,20 +45,20 @@ func parseLine(line string) (row, error) {
 	d, err := time.Parse("02 Jan 2006", date)
 	if err != nil {
 		log.Print(err)
-		return out, ErrNoMatch
+		return out, ErrFloat
 	}
 	out.date = d
 	out.item = strings.TrimSpace(item)
 	c, err := decomma(change)
 	if err != nil {
 		log.Print(err)
-		return out, ErrNoMatch
+		return out, ErrFloat
 	}
 	out.change = c
 	b, err := decomma(balance)
 	if err != nil {
 		log.Print(err)
-		return out, ErrNoMatch
+		return out, ErrFloat
 	}
 	out.balance = b
 	return out, nil
@@ -101,7 +102,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	rows, err := parseDoc(fd, rejects)
 	if err != nil {
 		log.Fatal(err)
