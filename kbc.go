@@ -103,7 +103,8 @@ func main() {
 		}
 		diff := r.balance - balance
 		if i < 10 {
-			fmt.Println(diff)
+			fmt.Println(r.item, diff, r.balance)
 		}
+		balance = r.balance
 	}
 }
