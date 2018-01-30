@@ -26,7 +26,7 @@ type row struct {
 }
 
 func (r row) String() string {
-	return fmt.Sprintf("%s %s %v %v", r.date.Format("2006-01-02"), r.item, r.change, r.balance)
+	return fmt.Sprintf("%s\t%s\t%v\t%v", r.date.Format("2006-01-02"), r.item, r.change, r.balance)
 }
 
 func parseLine(line string) (row, error) {
@@ -45,7 +45,7 @@ func parseLine(line string) (row, error) {
 		return out, ErrNoMatch
 	}
 	out.date = d
-	out.item = item
+	out.item = strings.TrimSpace(item)
 	c, err := strconv.ParseFloat(change, 64)
 	if err != nil {
 		log.Print(err)
