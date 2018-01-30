@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"regexp"
 	"sort"
 	"strings"
@@ -273,14 +275,13 @@ func decomma(in string) (decimal.Decimal, error) {
 	return decimal.NewFromString(x)
 }
 
-func parseDoc(fd io.Reader, rejects io.Writer) ([]row, error) {
+func parseDoc(fd io.Reader) ([]row, error) {
 	var out []row
 	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
 		line := scanner.Text()
 		r, err := parseLine(line)
 		if err == ErrNoMatch {
-			rejects.Write([]byte(line + "\n"))
 			continue
 		}
 		if err != nil {
@@ -294,26 +295,18 @@ func parseDoc(fd io.Reader, rejects io.Writer) ([]row, error) {
 	return out, nil
 }
 
-func main() {
-	f := "/Users/psn/Downloads/wat/Current Account Statement - 01 Oct 2017.txt"
-	fd, err := os.Open(f)
+func processOneFile(filename string) ([]row, error) {
+	var out []row
+	fd, err := os.Open(filename)
 	defer fd.Close()
 	if err != nil {
-		log.Fatal(err)
+		return out, err
 	}
-	rejects, err := os.Create("rejects")
-	defer rejects.Close()
+	rows, err := parseDoc(fd)
 	if err != nil {
-		log.Fatal(err)
-	}
-	rows, err := parseDoc(fd, rejects)
-	if err != nil {
-		log.Fatal(err)
+		return out, err
 	}
 	var balance decimal.Decimal
-	var sum decimal.Decimal
-	var classified decimal.Decimal
-	buckets := make(map[string]decimal.Decimal)
 	for i, r := range rows {
 		if i == 0 {
 			balance = r.balance
@@ -327,10 +320,34 @@ func main() {
 		rows[i].diff = diff
 		balance = r.balance
 	}
+	return rows, nil
+}
+
+func main() {
+	dir := "/Users/psn/Documents/statements"
+	contents, err := ioutil.ReadDir(dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var rows []row
+	for _, c := range contents {
+		if !strings.HasSuffix(c.Name(), ".txt") {
+			continue
+		}
+		p := path.Join(dir, c.Name())
+		r, err := processOneFile(p)
+		if err != nil {
+			log.Fatal(err)
+		}
+		rows = append(rows, r...)
+	}
 	sort.Slice(rows, func(a, b int) bool {
 		return rows[a].diff.GreaterThan(rows[b].diff)
 	})
 
+	var sum decimal.Decimal
+	var classified decimal.Decimal
+	buckets := make(map[string]decimal.Decimal)
 	for _, r := range rows {
 		t := 5.
 		diff := r.diff
