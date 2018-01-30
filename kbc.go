@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	re := regexp.MustCompile(`\s+\d\d Oct 2017`)
+	re := regexp.MustCompile(`\s+\d\d [A-Z][a-z]{2} 2017`)
 	f := "/Users/psn/Downloads/wat/Current Account Statement - 01 Oct 2017.txt"
 	fd, err := os.Open(f)
 	defer fd.Close()
