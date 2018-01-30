@@ -21,9 +21,9 @@ var (
 type row struct {
 	date    time.Time
 	item    string
-	change  float64
-	diff    float64
-	balance float64
+	change  decimal.Decimal
+	diff    decimal.Decimal
+	balance decimal.Decimal
 }
 
 func (r row) String() string {
