@@ -88,7 +88,8 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	}
 	req.Data = append(req.Data, vr)
 
-	_, err = srv.Spreadsheets.BatchUpdate(sheet, req).Context(ctx).Do()
+	ss := sheets.NewSpreadsheetsValuesService(new)
+	_, err = ss.BatchUpdate(sheet, req).Context(ctx).Do()
 	return err
 }
 
