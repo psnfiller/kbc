@@ -47,7 +47,7 @@ func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name strin
 }
 
 func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows []row, name string) error {
-	_, err := newSheet(ctx, srv, sheet, "test")
+	_, err := newSheet(ctx, srv, sheet, "test2")
 	if err != nil {
 		return err
 	}
@@ -65,12 +65,7 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 		"bucket",
 	}
 	vr.Values = append(vr.Values, headings)
-	rowTally := 0
-	for i, r := range rows {
-		rowTally++
-		if i > 10 {
-			break
-		}
+	for _, r := range rows {
 		var credit, debit string
 		if r.diff.LessThan(decimal.Decimal{}) {
 			credit = ""
@@ -90,7 +85,7 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 		}
 		vr.Values = append(vr.Values, rr)
 	}
-	vr.Range = "test"
+	vr.Range = "test2"
 	req.Data = append(req.Data, vr)
 
 	ss := sheets.NewSpreadsheetsValuesService(srv)
