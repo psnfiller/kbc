@@ -53,6 +53,39 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	requests := []*sheets.Request{}
 	req := &sheets.Request{}
 	var rowData []*sheets.RowData
+	rr := &sheets.RowData{}
+	cd = &sheets.CellData{
+		UserEnteredValue: &sheets.ExtendedValue{
+			StringValue: "date",
+		},
+	}
+	rr.Values = append(rr.Values, cd)
+	cd = &sheets.CellData{
+		UserEnteredValue: &sheets.ExtendedValue{
+			StringValue: "Descripttion",
+		},
+	}
+	rr.Values = append(rr.Values, cd)
+	cd = &sheets.CellData{
+		UserEnteredValue: &sheets.ExtendedValue{
+			StringValue: "Change",
+		},
+	}
+	rr.Values = append(rr.Values, cd)
+	cd = &sheets.CellData{
+		UserEnteredValue: &sheets.ExtendedValue{
+			StringValue: "Balance",
+		},
+	}
+	rr.Values = append(rr.Values, cd)
+	cd = &sheets.CellData{
+		UserEnteredValue: &sheets.ExtendedValue{
+			StringValue: "Bucket",
+		},
+	}
+	rr.Values = append(rr.Values, cd)
+	rowData = append(rowData, rr)
+
 	for _, r := range rows {
 		rr := &sheets.RowData{}
 		cd := &sheets.CellData{
@@ -90,6 +123,10 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 				},
 			},
 			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.balance.StringFixed(2)},
+		}
+		rr.Values = append(rr.Values, cd)
+		cd = &sheets.CellData{
+			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.class},
 		}
 		rr.Values = append(rr.Values, cd)
 
