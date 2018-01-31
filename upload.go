@@ -74,18 +74,18 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 		var credit, debit string
 		if r.diff.LessThan(decimal.Decimal{}) {
 			credit = ""
-			debit = r.diff.StringFixed(2)
+			debit = "-€" + r.change.StringFixed(2)
 		} else {
 			debit = ""
-			credit = r.diff.StringFixed(2)
+			credit = "€" + r.diff.StringFixed(2)
 		}
 
 		rr := []interface{}{
-			r.date.Format("2006/01/02/"),
+			r.date.Format("2006/01/02"),
 			r.item,
 			credit,
 			debit,
-			r.balance.StringFixed(2),
+			"€" + r.balance.StringFixed(2),
 			r.class,
 		}
 		vr.Values = append(vr.Values, rr)
