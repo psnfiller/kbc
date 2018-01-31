@@ -1,11 +1,31 @@
 package main
 
 import (
+	"log"
+
 	"golang.org/x/net/context"
 	sheets "google.golang.org/api/sheets/v4"
 )
 
 func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name string) (int64, error) {
+
+	sheetResp, err := srv.Spreadsheets.Get(sheet).Context(ctx).Do()
+	if err != nil {
+		return 0, err
+	}
+	found := false
+	var id int64
+	for _, s := range sheetResp.Sheets {
+		if s.Properties.Title == name {
+			found = true
+			id = s.Properties.SheetId
+		}
+	}
+	if found {
+		log.Print("found existing sheet")
+		return id, nil
+	}
+
 	// Does the sheet have a tab?
 	requests := []*sheets.Request{}
 	req := &sheets.Request{}
@@ -36,6 +56,19 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	for _, r := range rows {
 		rr := &sheets.RowData{}
 		cd := &sheets.CellData{
+			UserEnteredValue: &sheets.ExtendedValue{
+				StringValue: r.date.Format("2006-01-02"),
+			},
+			UserEnteredFormat: &sheets.CellFormat{
+				NumberFormat: &sheets.NumberFormat{
+					Type:    "DATE",
+					Pattern: "yyyy-mm-dd",
+				},
+			},
+		}
+
+		rr.Values = append(rr.Values, cd)
+		cd = &sheets.CellData{
 			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.item},
 		}
 		rr.Values = append(rr.Values, cd)
