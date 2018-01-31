@@ -720,6 +720,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		return
 	}
 	err = uploadOneFile(ctx, srv, sheetID, rows, "all")
 	if err != nil {

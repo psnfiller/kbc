@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/shopspring/decimal"
 	"golang.org/x/net/context"
 	sheets "google.golang.org/api/sheets/v4"
 )
@@ -46,7 +47,53 @@ func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name strin
 }
 
 func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows []row, name string) error {
-	id, err := newSheet(ctx, srv, sheet, name)
+	id, err := newSheet(ctx, srv, sheet, "test")
+	if err != nil {
+		return err
+	}
+	req := &sheets.BatchUpdateValuesRequest{}
+	vr := &sheets.ValueRange{}
+	vr.MajorDimension = "ROWS"
+	headings := []interface{}{
+		"date",
+		"description",
+		"credit",
+		"debit",
+		"balance",
+		"bucket",
+	}
+	vr.Values = append(vr.Values, headings)
+	for i, r := range rows {
+		if i > 10 {
+			break
+		}
+		var credit, debit string
+		if r.diff.LessThan(decimal.Decimal{}) {
+			credit = ""
+			debit = r.diff.StringFixed(2)
+		} else {
+			debit = ""
+			credit = r.diff.StringFixed(2)
+		}
+
+		rr := []interface{}{
+			r.date.Format("2006/01/02/"),
+			r.item,
+			credit,
+			debit,
+			r.balance.StringFixed(2),
+			r.class,
+		}
+		vr.Values = append(vr.Values, rr)
+	}
+	req.Data = append(req.Data, vr)
+
+	_, err = srv.Spreadsheets.BatchUpdate(sheet, req).Context(ctx).Do()
+	return err
+}
+
+func uploadOneFileOld(ctx context.Context, srv *sheets.Service, sheet string, rows []row, name string) error {
+	id, err := newSheet(ctx, srv, sheet, "test")
 	if err != nil {
 		return err
 	}
@@ -86,7 +133,10 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	rr.Values = append(rr.Values, cd)
 	rowData = append(rowData, rr)
 
-	for _, r := range rows {
+	for i, r := range rows {
+		if i > 10 {
+			break
+		}
 		rr := &sheets.RowData{}
 		cd := &sheets.CellData{
 			UserEnteredValue: &sheets.ExtendedValue{
