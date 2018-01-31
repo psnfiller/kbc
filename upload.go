@@ -62,7 +62,7 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	rr.Values = append(rr.Values, cd)
 	cd = &sheets.CellData{
 		UserEnteredValue: &sheets.ExtendedValue{
-			StringValue: "Descripttion",
+			StringValue: "Description",
 		},
 	}
 	rr.Values = append(rr.Values, cd)
@@ -90,12 +90,12 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 		rr := &sheets.RowData{}
 		cd := &sheets.CellData{
 			UserEnteredValue: &sheets.ExtendedValue{
-				StringValue: r.date.Format("2006-01-02"),
+				StringValue: r.date.Format("02/01/2006"),
 			},
 			UserEnteredFormat: &sheets.CellFormat{
 				NumberFormat: &sheets.NumberFormat{
 					Type:    "DATE",
-					Pattern: "yyyy-mm-dd",
+					Pattern: "dd/mm/yyyy",
 				},
 			},
 		}

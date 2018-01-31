@@ -721,6 +721,10 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	err = uploadOneFile(ctx, srv, sheetID, rows, "all")
+	if err != nil {
+		log.Fatal(err)
+	}
 	sort.Slice(rows, func(a, b int) bool {
 		return rows[a].diff.GreaterThan(rows[b].diff)
 	})
