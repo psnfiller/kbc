@@ -535,6 +535,8 @@ func classify(in string) string {
 	case strings.Contains(in, "VODAFONE"):
 		return "phone"
 
+	case strings.Contains(in, "PHARMACY"):
+		return "medical"
 	case strings.Contains(in, "LLOYDSPHARMACY"):
 		return "medical"
 	case strings.Contains(in, "Blackrock Clinic Spe"):
