@@ -20,7 +20,7 @@ import (
 var (
 	ErrNoMatch   = errors.New("nope")
 	ErrFloat     = errors.New("failed to parse float")
-	re           = regexp.MustCompile(`\s+(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
+	re           = regexp.MustCompile(`\f?\s*(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
 	defaultClass = "unknown"
 )
 
@@ -49,7 +49,7 @@ func parseLine(line string) (row, error) {
 	balance := l[4]
 	d, err := time.Parse("02 Jan 2006", date)
 	if err != nil {
-		log.Print(err)
+		log.Print(err, line, date)
 		return out, ErrFloat
 	}
 	out.date = d
@@ -72,7 +72,12 @@ func parseLine(line string) (row, error) {
 
 func classify(in string) string {
 	switch {
+	case in == "Non-Euro Point Of Sales Fee":
+		return "Fee"
+
 	case in == "SDD KBC Bank Ireland Public Limited":
+		return "House"
+	case in == "SDD KBC Bank Ireland Public Limite":
 		return "House"
 	case strings.Contains(in, " PROPERTY TAX"):
 		return "House"
@@ -82,16 +87,203 @@ func classify(in string) string {
 		return "House"
 	case strings.Contains(in, "Flogas Natural Gas"):
 		return "House"
+	case strings.Contains(in, "FLOGAS NATURAL GAS"):
+		return "House"
 	case strings.Contains(in, "EIRCOM"):
 		return "House"
 	case strings.Contains(in, "EIR"):
 		return "House"
 	case strings.Contains(in, "IRISH LIFE"):
 		return "House"
+	case strings.Contains(in, "Irish Life"):
+		return "House"
+	case strings.Contains(in, "SCT KBC MORTGAGE"):
+		return "House"
+	case strings.Contains(in, "Irish Water"):
+		return "House"
+	case strings.Contains(in, "residents association"):
+		return "House"
 
 	case strings.Contains(in, "BROWN THOMAS"):
 		return "House stuff"
+	case strings.Contains(in, "EZLIVING"):
+		return "House stuff"
+	case strings.Contains(in, "POWERCITY.IE"):
+		return "House stuff"
+	case strings.Contains(in, "tiling"):
+		return "House stuff"
+	case strings.Contains(in, "HOUSE OF FRASER"):
+		return "House stuff"
+	case strings.Contains(in, "ONCEOFFPAYMENT plumbing"):
+		return "House stuff"
+	case strings.Contains(in, "IKEA"):
+		return "House stuff"
+	case strings.Contains(in, "WOODIES"):
+		return "house stuff"
+	case strings.Contains(in, "HOWARDS STORAGE WORL"):
+		return "house stuff"
+	case strings.Contains(in, "OS ITALIAN TILE"):
+		return "house stuff"
 
+	case strings.Contains(in, " WWW.THEWITCHERY.CO"):
+		return "presents"
+	case strings.Contains(in, " FORTNUMANDMASON.CO"):
+		return "presents"
+
+	case strings.Contains(in, "Peter Nuttall to rbs"):
+		return "rbs"
+	case strings.Contains(in, "Peter Nuttall Dashboard"):
+		return "rbs"
+
+	case strings.Contains(in, "CHADWICKS"):
+		return "garden"
+	case strings.Contains(in, "ARBORETUM KILQUADE "):
+		return "garden"
+	case strings.Contains(in, "ERHS PLANTS"):
+		return "garden"
+	case strings.Contains(in, "DAVID AUSTIN ROSE "):
+		return "garden"
+	case strings.Contains(in, "WWW.GREENGARDENER.CO"):
+		return "garden"
+
+	case strings.Contains(in, "BEERS CHEERS"):
+		return "holidays"
+	case strings.Contains(in, "Johan Nystro"):
+		return "holidays"
+	case strings.Contains(in, "DJURGARDSBRON"):
+		return "holidays"
+	case strings.Contains(in, "SIOP Y LLAN "):
+		return "holidays"
+	case strings.Contains(in, "JUNIBACKEN-ENTRE"):
+		return "holidays"
+	case strings.Contains(in, "ICA SUPERMARKET HOGA"):
+		return "holidays"
+	case strings.Contains(in, "REWE"):
+		return "holidays"
+	case strings.Contains(in, "NOBELMUSEET"):
+		return "holidays"
+	case strings.Contains(in, "Vasamuseets Restaura"):
+		return "holidays"
+	case strings.Contains(in, "TALYLLYN RAILWAY"):
+		return "holidays"
+	case strings.Contains(in, "VAPIANO Mainz Rheint"):
+		return "holidays"
+	case strings.Contains(in, "Trainline.com"):
+		return "holidays"
+	case strings.Contains(in, "ART OFFICE STOCKHO"):
+		return "holidays"
+	case strings.Contains(in, "GRAY LINE TOURS"):
+		return "holidays"
+	case strings.Contains(in, "TALYLLYN RAILWAY"):
+		return "holidays"
+	case strings.Contains(in, "Trainline.com"):
+		return "holidays"
+	case strings.Contains(in, "VASAMUSEETS"):
+		return "holidays"
+	case strings.Contains(in, "INTREPID SEA AIR AND"):
+		return "holidays"
+	case strings.Contains(in, "IRISH FERRIE"):
+		return "holidays"
+	case strings.Contains(in, "DAA CARPARK SERVIC"):
+		return "holidays"
+	case strings.Contains(in, "DUBLIN AIRPORT BUS"):
+		return "holidays"
+	case strings.Contains(in, "VILLAGGIO "):
+		return "holidays"
+	case strings.Contains(in, " PIZZERIA ALBONA"):
+		return "holidays"
+	case strings.Contains(in, "Oberwesel"):
+		return "holidays"
+	case strings.Contains(in, "COMPUTER HISTORY"):
+		return "holidays"
+	case strings.Contains(in, "Stena Lin"):
+		return "holidays"
+	case strings.Contains(in, "ROYAL OAK HOTEL"):
+		return "holidays"
+	case strings.Contains(in, "TRAFALGAR HOUSE"):
+		return "holidays"
+	case strings.Contains(in, "HOTEL WEINBERG SCHLO"):
+		return "holidays"
+	case strings.Contains(in, "DUBAIRPORT"):
+		return "holidays"
+	case strings.Contains(in, "BABYLOFT"):
+		return "holidays"
+	case strings.Contains(in, "SCHWEIZERKONDITORI"):
+		return "holidays"
+	case strings.Contains(in, "JOSEPH BRANNIGAN"):
+		return "holidays"
+	case strings.Contains(in, "LYFT RIDE"):
+		return "holidays"
+	case strings.Contains(in, "DEBENHAMS"):
+		return "holidays"
+	case strings.Contains(in, "AMTRAK"):
+		return "holidays"
+	case strings.Contains(in, "MEINHOLF"):
+		return "holidays"
+	case strings.Contains(in, "RYANAIR"):
+		return "holidays"
+	case strings.Contains(in, "HOTELL ZINKENSDAMM"):
+		return "holidays"
+	case strings.Contains(in, "AIRBNB"):
+		return "holidays"
+	case strings.Contains(in, "LUFTHANSA"):
+		return "holidays"
+	case strings.Contains(in, "TRIPADV"):
+		return "holidays"
+	case strings.Contains(in, "AERLING"):
+		return "holidays"
+	case strings.Contains(in, "SAS"):
+		return "holidays"
+	case strings.Contains(in, "AVIS RENT-A-CAR"):
+		return "holidays"
+	case strings.Contains(in, "ARLANDA"):
+		return "holidays"
+	case strings.Contains(in, "IRISH FERRIES LIMITE"):
+		return "holidays"
+	case strings.Contains(in, "NOVOTEL BRUSSELS OFF"):
+		return "holidays"
+	case strings.Contains(in, "STABLE COURT APARTME"):
+		return "holidays"
+	case strings.Contains(in, "RENTALCARS.COM"):
+		return "holidays"
+	case strings.Contains(in, "Stena Line Ltd"):
+		return "holidays"
+	case strings.Contains(in, "PARK INN BELFAST"):
+		return "holidays"
+	case strings.Contains(in, "CSH ICE AIRSIDE DEPARTUR"):
+		return "holidays"
+	case strings.Contains(in, "POS SNOW ROCK"):
+		return "holidays"
+
+	case strings.Contains(in, "TOMTHUMBBAB"):
+		return "toys"
+	case strings.Contains(in, "WWW.MYRIADONLINE.CO"):
+		return "toys"
+	case strings.Contains(in, "SMYTHS TOYS"):
+		return "toys"
+	case strings.Contains(in, "KIDDING AROUND"):
+		return "toys"
+	case strings.Contains(in, "BABIES R US"):
+		return "toys"
+	case strings.Contains(in, "ONE HUNDRED TOYS"):
+		return "toys"
+	case strings.Contains(in, "SP CONSCIOUS CRAFT"):
+		return "toys"
+	case strings.Contains(in, " WWW.BABIPUR.CO.UK"):
+		return "toys"
+	case strings.Contains(in, "MILLETS"):
+		return "toys"
+
+	case strings.Contains(in, "CYCLE PLUS"):
+		return "bike"
+
+	case strings.Contains(in, "MOVEMBER CHARITY"):
+		return "charity"
+
+	case strings.Contains(in, "DONNYBROOK FAIR"):
+		return "Food"
+	case strings.Contains(in, "CO-OP"):
+		return "Food"
 	case strings.Contains(in, "POS TESCO STORE"):
 		return "Food"
 	case strings.Contains(in, "POS FARRELLYS"):
@@ -116,6 +308,12 @@ func classify(in string) string {
 		return "Food"
 	case strings.Contains(in, "PAYPAL HAS BEAN"):
 		return "Food"
+	case strings.Contains(in, "fortnumandmason.com"):
+		return "Food"
+	case strings.Contains(in, "CAVISTONS"):
+		return "Food"
+	case strings.Contains(in, "SUPERVALU"):
+		return "Food"
 
 	case strings.Contains(in, "THE TRAMYARD KITCHEN"):
 		return "meals out"
@@ -133,16 +331,60 @@ func classify(in string) string {
 		return "meals out"
 	case strings.Contains(in, "BOMBAY P"):
 		return "meals out"
+	case strings.Contains(in, "RASAM"):
+		return "meals out"
+	case strings.Contains(in, "BAREBURGER"):
+		return "meals out"
+	case strings.Contains(in, "BOX BURGER"):
+		return "meals out"
+	case strings.Contains(in, "BENITOS RESTAURANT"):
+		return "meals out"
+	case strings.Contains(in, "KATHMANDU"):
+		return "meals out"
+	case strings.Contains(in, "THE HUNGRY MONK REST"):
+		return "meals out"
+	case strings.Contains(in, "GLENMALURE LODGE"):
+		return "meals out"
 
+	case strings.Contains(in, "THE PORTER HOUS"):
+		return "booze"
 	case strings.Contains(in, "O BRIENS WINES"):
+		return "booze"
+	case strings.Contains(in, "WWW.BEERGONZO.CO.UK"):
+		return "booze"
+	case strings.Contains(in, "64 WINE"):
+		return "booze"
+	case strings.Contains(in, "THE MARTELLO HOTEL"):
+		return "booze"
+	case strings.Contains(in, "BLACKROCK CELLAR"):
+		return "booze"
+	case strings.Contains(in, "IDLEWILDE"):
 		return "booze"
 
 	case strings.Contains(in, "POS GREAT OUTDOORS"):
 		return "clothes"
 	case strings.Contains(in, "HOTMILK LINGERIE"):
 		return "clothes"
+	case strings.Contains(in, "MARKS SPENCER"):
+		return "clothes"
+	case strings.Contains(in, "EX OFFICIO"):
+		return "clothes"
+	case strings.Contains(in, "SERAPHINE"):
+		return "clothes"
+	case strings.Contains(in, "WWW.FATFACE.COM"):
+		return "clothes"
+	case strings.Contains(in, "Marks and Spencer"):
+		return "clothes"
+	case strings.Contains(in, "NEXT"):
+		return "clothes"
 
 	case strings.Contains(in, "Footprints Montessori"):
+		return "childcare"
+	case strings.Contains(in, "domiso"):
+		return "childcare"
+	case strings.Contains(in, "DOMISOMUSIC"):
+		return "childcare"
+	case strings.Contains(in, "preschool"):
 		return "childcare"
 
 	case strings.Contains(in, "MOTHERCARE"):
@@ -151,9 +393,58 @@ func classify(in string) string {
 		return "baby clothes"
 	case strings.Contains(in, "JOJO MAMAN BEBE"):
 		return "baby clothes"
+	case strings.Contains(in, "HE CLARKS SHOP"):
+		return "baby clothes"
+
+	case strings.Contains(in, "CHARLESLAND SPORT"):
+		return "wife "
+
+	case strings.Contains(in, "Kia Ora"):
+		return "day out"
+	case strings.Contains(in, "IMAGINOSITY"):
+		return "day out"
+	case strings.Contains(in, "NCH.IE"):
+		return "day out"
+	case strings.Contains(in, "DUBLIN ZOO"):
+		return "day out"
+	case strings.Contains(in, "TICKET MASTER"):
+		return "day out"
+	case strings.Contains(in, "GLENROE"):
+		return "day out"
+	case strings.Contains(in, "KILLRUDDERY"):
+		return "day out"
+	case strings.Contains(in, "Zoom Adventure"):
+		return "day out"
+	case strings.Contains(in, "POWERSCOURT"):
+		return "day out"
+	case strings.Contains(in, "THE WETLAND CENTRE"):
+		return "day out"
+	case strings.Contains(in, "GREENS BERRY FARM"):
+		return "day out"
+	case strings.Contains(in, "ROYAL ZOOLOGICAL SOC"):
+		return "day out"
 
 	case strings.Contains(in, " Google Ireland Limited"):
 		return "Pay"
+	case strings.Contains(in, "Transfer MORGAN STANLEY SMITH"):
+		return "Pay"
+	case strings.Contains(in, "Transfer MORGAN STNLEY SMITH"):
+		return "Pay"
+	case strings.Contains(in, "Transfer MORGAN STANLEY SMIT"):
+		return "Pay"
+	case strings.Contains(in, "GOOGLE"):
+		return "Pay"
+	case strings.Contains(in, "BIRDWATCH IRELAND BWI"):
+		return "Pay"
+
+	case strings.Contains(in, "KBC Online Dashboard Transfer"):
+		return "transfer in"
+	case strings.Contains(in, "SCT PETER NUTTALL RBS"):
+		return "transfer in"
+	case strings.Contains(in, "KBC Mobile from smart online"):
+		return "transfer in"
+	case strings.Contains(in, "KBC Online fornewregsave"):
+		return "transfer in"
 
 	case strings.Contains(in, "Smart Move Online"):
 		return "Savings"
@@ -167,7 +458,18 @@ func classify(in string) string {
 		return "Savings"
 	case strings.Contains(in, "KBC Mobile : Extra Regular Saver"):
 		return "Savings"
+	case strings.Contains(in, "KBC Mobile to smart online"):
+		return "Savings"
+	case strings.Contains(in, "Online SCT new regular saver"):
+		return "Savings"
 
+	case strings.Contains(in, "MOTHERJONES"):
+		return "News"
+
+	case strings.Contains(in, "SEEEDSTUDIO"):
+		return "Computers"
+	case strings.Contains(in, "UPUTRONICS"):
+		return "Computers"
 	case strings.Contains(in, "PAYPAL COMPULABLTD"):
 		return "Computers"
 	case strings.Contains(in, "APPLE ONLINE STORE"):
@@ -190,6 +492,11 @@ func classify(in string) string {
 		return "Computers"
 	case strings.Contains(in, "ZAZZLE"):
 		return "Computers"
+	case strings.Contains(in, "TARSNAP.COM"):
+		return "Computers"
+
+	case strings.Contains(in, "APPLE STORE"):
+		return "Phone"
 
 	case strings.Contains(in, "GOOGLE Google Music"):
 		return "Music"
@@ -206,6 +513,9 @@ func classify(in string) string {
 
 	case strings.HasPrefix(in, "ATM"):
 		return "Cash"
+
+	case strings.HasPrefix(in, "POS Montag Steins Cloc"):
+		return "CLOCK"
 
 	case strings.HasPrefix(in, "POS Amazon"):
 		return "Amazon"
@@ -237,7 +547,19 @@ func classify(in string) string {
 		return "medical"
 	case strings.Contains(in, "GREYSTONES HARBOUR F"):
 		return "medical"
+	case strings.Contains(in, "GREYSTONES EYE CENTR"):
+		return "medical"
+	case strings.Contains(in, "OUR LADYS HOSP CRUM"):
+		return "medical"
+	case strings.Contains(in, "THE ULTRASOUND SUIT"):
+		return "medical"
+	case strings.Contains(in, "VHI Claims Vhi"):
+		return "medical"
 
+	case strings.Contains(in, "OREILLY"):
+		return "books"
+	case strings.Contains(in, "STRAND BOOK STORE"):
+		return "books"
 	case strings.Contains(in, "DUBRAY BOOKS"):
 		return "books"
 	case strings.Contains(in, "The Village Bookshop"):
@@ -248,6 +570,18 @@ func classify(in string) string {
 		return "books"
 	case strings.Contains(in, "EASONS"):
 		return "books"
+	case strings.Contains(in, "HODGES FIGGIS"):
+		return "books"
+	case strings.Contains(in, "BOOKS INC"):
+		return "books"
+	case strings.Contains(in, "THE GUTTER BOOKSHOP"):
+		return "books"
+	case strings.Contains(in, "REFORMATION HERITAGE"):
+		return "books"
+	case strings.Contains(in, "MEDIA GRATIAE"):
+		return "books"
+	case strings.Contains(in, "CHRISTIAN FOCUS"):
+		return "books"
 
 	case strings.Contains(in, "INTERFLORA"):
 		return "flowers"
@@ -255,10 +589,38 @@ func classify(in string) string {
 		return "flowers"
 
 	case strings.Contains(in, "AN POST-OFFICES"):
-		return "flowers"
+		return "post"
 
+	case strings.Contains(in, "HALFORDS"):
+		return "car"
 	case strings.Contains(in, "APPLEGREEN MOTORWAY"):
-		return "fuel"
+		return "car"
+	case strings.Contains(in, "AVIVA DIRECT"):
+		return "car"
+	case strings.Contains(in, "WWW.AVIVA.IE"):
+		return "car"
+	case strings.Contains(in, "123 MONEY"):
+		return "car"
+	case strings.Contains(in, "HILLS OF GREYSTONES"):
+		return "car"
+	case strings.Contains(in, "ONLINE MOTOR TAX"):
+		return "car"
+	case strings.Contains(in, "Greystones Exhausts"):
+		return "car"
+	case strings.Contains(in, "CAR VALETING"):
+		return "car"
+	case strings.Contains(in, "TOPAZ"):
+		return "car"
+	case strings.Contains(in, "CENTRA"):
+		return "car"
+	case strings.Contains(in, "APPLEGREEN"):
+		return "car"
+	case strings.Contains(in, "WWW NCTS IE"):
+		return "car"
+	case strings.Contains(in, "ESSO"):
+		return "car"
+	case strings.Contains(in, "M11 WICKLOW SERVICE"):
+		return "car"
 
 	case strings.Contains(in, "PARCEL MOTEL"):
 		return "parcel motel"
@@ -315,7 +677,7 @@ func processOneFile(filename string) ([]row, error) {
 		diff := r.balance.Sub(balance)
 		invert := r.change.Mul(decimal.NewFromFloat(-1))
 		if !diff.Equal(r.change) && !diff.Equal(invert) {
-			log.Fatal(r, "s", diff, r.change, r.change.Mul(decimal.NewFromFloat(-1)))
+			return rows, fmt.Errorf("failed to do diff %s %s %s %s", r, diff, r.change, invert)
 		}
 		rows[i].diff = diff
 		balance = r.balance
@@ -324,6 +686,7 @@ func processOneFile(filename string) ([]row, error) {
 }
 
 func main() {
+	//dir := "/Users/psn/Downloads/wat"
 	dir := "/Users/psn/Documents/statements"
 	contents, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -337,7 +700,7 @@ func main() {
 		p := path.Join(dir, c.Name())
 		r, err := processOneFile(p)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("failed to process %s: %s", c.Name(), err)
 		}
 		rows = append(rows, r...)
 	}
