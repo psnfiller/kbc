@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"golang.org/x/net/context"
 )
 
 var (
@@ -687,7 +688,17 @@ func processOneFile(filename string) ([]row, error) {
 	return rows, nil
 }
 
+var (
+	sheetID = "1QbPydCWNcuYpFIP8uf2sGT6lpaOjFmkS-a4m9zvLVa4"
+)
+
 func main() {
+	ctx := context.Background()
+	srv, err := newSrv(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//dir := "/Users/psn/Downloads/wat"
 	dir := "/Users/psn/Documents/statements"
 	contents, err := ioutil.ReadDir(dir)
@@ -705,6 +716,10 @@ func main() {
 			log.Fatalf("failed to process %s: %s", c.Name(), err)
 		}
 		rows = append(rows, r...)
+		err = uploadOneFile(ctx, srv, sheetID, rows, c.Name())
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	sort.Slice(rows, func(a, b int) bool {
 		return rows[a].diff.GreaterThan(rows[b].diff)

@@ -89,6 +89,28 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
+func newSrv(ctx context.Context) (*sheets.Service, error) {
+	b, err := ioutil.ReadFile("client_secret.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	// If modifying these scopes, delete your previously saved credentials
+	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
+	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+	client := getClient(ctx, config)
+
+	srv, err := sheets.New(client)
+	if err != nil {
+		log.Fatalf("Unable to retrieve Sheets Client %v", err)
+	}
+	return srv, nil
+}
+
+/*
 func main() {
 	ctx := context.Background()
 
@@ -130,8 +152,9 @@ func main() {
 
 		// TODO: Change code below to process the `resp` object:
 		fmt.Printf("%#v\n", resp)
-	*/
+*/
 
+/*
 	range2 := "Sheet2!A2:E"
 
 	valueInputOption := "USER_ENTERED"
@@ -147,3 +170,4 @@ func main() {
 	// TODO: Change code below to process the `resp` object:
 	fmt.Printf("%#v\n", resp2)
 }
+*/
