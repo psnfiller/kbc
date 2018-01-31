@@ -83,6 +83,16 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 		}
 		rr.Values = append(rr.Values, cd)
 
+		cd = &sheets.CellData{
+			UserEnteredFormat: &sheets.CellFormat{
+				NumberFormat: &sheets.NumberFormat{
+					Type: "CURRENCY",
+				},
+			},
+			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.balance.StringFixed(2)},
+		}
+		rr.Values = append(rr.Values, cd)
+
 		rowData = append(rowData, rr)
 	}
 	req.AppendCells = &sheets.AppendCellsRequest{
