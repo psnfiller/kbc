@@ -54,7 +54,7 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	req := &sheets.Request{}
 	var rowData []*sheets.RowData
 	rr := &sheets.RowData{}
-	cd = &sheets.CellData{
+	cd := &sheets.CellData{
 		UserEnteredValue: &sheets.ExtendedValue{
 			StringValue: "date",
 		},
