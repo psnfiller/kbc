@@ -1,5 +1,7 @@
 package main
 
+// Taken from https://developers.google.com/sheets/api/quickstart/go
+
 import (
 	"encoding/json"
 	"fmt"
@@ -94,8 +96,6 @@ func newSrv(ctx context.Context) (*sheets.Service, error) {
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
-	// If modifying these scopes, delete your previously saved credentials
-	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
 	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
@@ -108,65 +108,3 @@ func newSrv(ctx context.Context) (*sheets.Service, error) {
 	}
 	return srv, nil
 }
-
-/*
-func main() {
-	ctx := context.Background()
-
-	b, err := ioutil.ReadFile("client_secret.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
-
-	// If modifying these scopes, delete your previously saved credentials
-	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := getClient(ctx, config)
-
-	srv, err := sheets.New(client)
-	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets Client %v", err)
-	}
-
-	// Prints the names and majors of students in a sample spreadsheet:
-	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-
-	spreadsheetId := "1QbPydCWNcuYpFIP8uf2sGT6lpaOjFmkS-a4m9zvLVa4"
-	/*
-		requests := []*sheets.Request{}
-		req := &sheets.Request{}
-		req.AddSheet = &sheets.AddSheetRequest{Properties: &sheets.SheetProperties{Title: "t"}}
-
-		requests = append(requests, req)
-		rb := &sheets.BatchUpdateSpreadsheetRequest{
-			Requests: requests,
-		}
-		resp, err := srv.Spreadsheets.BatchUpdate(spreadsheetId, rb).Context(ctx).Do()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// TODO: Change code below to process the `resp` object:
-		fmt.Printf("%#v\n", resp)
-*/
-
-/*
-	range2 := "Sheet2!A2:E"
-
-	valueInputOption := "USER_ENTERED"
-	rb2 := &sheets.ValueRange{}
-	rb2.Values = append(rb2.Values, []interface{}{"1", "2"})
-	rb2.Values = append(rb2.Values, []interface{}{"3", "4"})
-
-	resp2, err := srv.Spreadsheets.Values.Update(spreadsheetId, range2, rb2).ValueInputOption(valueInputOption).Context(ctx).Do()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// TODO: Change code below to process the `resp` object:
-	fmt.Printf("%#v\n", resp2)
-}
-*/

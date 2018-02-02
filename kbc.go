@@ -28,9 +28,11 @@ var (
 
 	defaultClass = "unknown"
 
-	sheetID     = flag.String("spreadsheet_id", "", "Id of the google spreadsheet to update")
-	directory   = flag.String("directory", "", "Directory of files to upload")
-	rejectsFile = flag.String("rejects", "", "File to write unmatched lines to. If empty, then no file is used.")
+	sheetID      = flag.String("spreadsheet_id", "", "Id of the google spreadsheet to update")
+	directory    = flag.String("directory", "", "Directory of files to upload")
+	rejectsFile  = flag.String("rejects", "", "File to write unmatched lines to. If empty, then no file is used.")
+	printBuckets = flag.Bool("buckets", false, "If true, print out spending per bucket and top unclassified expenses.")
+	bucketCutOff = flag.Float64("bucket-cut-off", 5., "only print expenses above this value")
 )
 
 func validateFlags() error {
@@ -172,8 +174,6 @@ func main() {
 		}
 	}
 
-	//dir := "/Users/psn/Downloads/wat"
-	dir := "/Users/psn/Documents/statements"
 	contents, err := ioutil.ReadDir(*directory)
 	if err != nil {
 		log.Fatal(err)
@@ -183,7 +183,7 @@ func main() {
 		if !strings.HasSuffix(c.Name(), ".txt") {
 			continue
 		}
-		p := path.Join(dir, c.Name())
+		p := path.Join(*directory, c.Name())
 		r, err := processOneFile(p, rejects)
 		if err != nil {
 			log.Fatalf("failed to process %s: %s", c.Name(), err)
@@ -198,17 +198,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sort.Slice(rows, func(a, b int) bool {
-		return rows[a].diff.GreaterThan(rows[b].diff)
-	})
-
+	if *printBuckets {
+		buckets(rows)
+	}
+}
+func buckets(rows []row) {
 	var sum decimal.Decimal
 	var classified decimal.Decimal
+	// Group the expenses into buckets.
 	buckets := make(map[string]decimal.Decimal)
 	for _, r := range rows {
-		t := 5.
-		diff := r.diff
-		if (diff.GreaterThan(decimal.NewFromFloat(t)) || diff.LessThan(decimal.NewFromFloat(-t))) && r.class == defaultClass {
+		if r.change.GreaterThan(decimal.NewFromFloat(*bucketCutOff)) && r.class == defaultClass {
+			// Print items in the default bucket, if greater than cutoff.
 			fmt.Println(r)
 		}
 		sum = sum.Add(r.change)
@@ -216,9 +217,11 @@ func main() {
 			classified = classified.Add(r.change)
 		}
 		b := buckets[r.class]
-		buckets[r.class] = b.Add(diff)
+		buckets[r.class] = b.Add(r.diff)
 	}
-	fmt.Println(classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
+	// Print percentage classified.
+	fmt.Printf("%f%% classified\n", classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
+	// Print out buckets.
 	type bucks struct {
 		name  string
 		value decimal.Decimal

@@ -8,6 +8,7 @@ import (
 	sheets "google.golang.org/api/sheets/v4"
 )
 
+// newSheet adds a tab to the sheet with the given name, or returns the id of the existing tab with the given name.
 func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name string) (int64, error) {
 	sheetResp, err := srv.Spreadsheets.Get(sheet).Context(ctx).Do()
 	if err != nil {
@@ -44,6 +45,7 @@ func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name strin
 	return resp.Replies[0].AddSheet.Properties.SheetId, nil
 }
 
+// uploadOneFile adds the rows in `rows` to the tab named in `name` to the sheet with id `sheet`. If the tab does not exist, it is created.
 func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows []row, name string) error {
 	_, err := newSheet(ctx, srv, sheet, name)
 	if err != nil {
@@ -62,6 +64,7 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	}
 	vr.Values = append(vr.Values, headings)
 	for _, r := range rows {
+		// We input dates and money with currency symbols etc, similar to human entry.
 		var credit, debit string
 		if r.diff.LessThan(decimal.Decimal{}) {
 			credit = ""
