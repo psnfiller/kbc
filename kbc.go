@@ -109,7 +109,7 @@ func parseDoc(fd io.Reader, rejects io.Writer) ([]row, error) {
 		r, err := parseLine(line)
 		if err == ErrNoMatch {
 			if rejects != nil {
-				rejects.Write([]byte(line))
+				rejects.Write([]byte(line + "\n"))
 			}
 			continue
 		}
@@ -135,6 +135,7 @@ func processOneFile(filename string, rejects io.Writer) ([]row, error) {
 	if err != nil {
 		return out, err
 	}
+	// Check that for each row, the difference + the previous balance equals the current balance. This also enables working out of a difference is a credit or a debit.
 	var balance decimal.Decimal
 	for i, r := range rows {
 		if i == 0 {
@@ -192,7 +193,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		return
 	}
 	err = uploadOneFile(ctx, srv, *sheetID, rows, "all")
 	if err != nil {
@@ -218,7 +218,7 @@ func main() {
 		b := buckets[r.class]
 		buckets[r.class] = b.Add(diff)
 	}
-	fmt.Printf("%s %s %s%%\n", sum, classified, classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
+	fmt.Println(classified.Mul(decimal.NewFromFloat(100)).DivRound(sum, 2))
 	type bucks struct {
 		name  string
 		value decimal.Decimal
