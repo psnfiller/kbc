@@ -33,6 +33,16 @@ var (
 	rejectsFile = flag.String("rejects", "", "File to write unmatched lines to. If empty, then no file is used.")
 )
 
+func validateFlags() error {
+	if *directory == "" {
+		return errors.New("you need to provide a directory, with --directory")
+	}
+	if *sheetID == "" {
+		return errors.New("you need to provide a spreadsheet_id, with --spreadsheet_id")
+	}
+	return nil
+}
+
 type row struct {
 	// The date the transaction was made, from the statement.
 	date time.Time
@@ -144,6 +154,9 @@ func processOneFile(filename string, rejects io.Writer) ([]row, error) {
 
 func main() {
 	flag.Parse()
+	if err := validateFlags(); err != nil {
+		log.Fatal(err)
+	}
 	ctx := context.Background()
 	srv, err := newSrv(ctx)
 	if err != nil {

@@ -49,23 +49,17 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 	if err != nil {
 		return err
 	}
-	req := &sheets.BatchUpdateValuesRequest{
-		ValueInputOption: "USER_ENTERED",
-		Data: []*sheets.ValueRange{&sheets.ValueRange{
-			MajorDimension: "ROWS",
-			Values: [][]interface{}{
-				{
-					"date",
-					"description",
-					"credit",
-					"debit",
-					"balance",
-					"bucket",
-				}},
-		}},
+	vr := &sheets.ValueRange{
+		MajorDimension: "ROWS",
+		Range:          name}
+	headings := []interface{}{
+		"date",
+		"description",
+		"credit",
+		"debit",
+		"balance",
+		"bucket",
 	}
-	vr := &sheets.ValueRange{MajorDimension: "ROWS"}
-	headings := []interface{}{}
 	vr.Values = append(vr.Values, headings)
 	for _, r := range rows {
 		var credit, debit string
@@ -87,8 +81,10 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 		}
 		vr.Values = append(vr.Values, rr)
 	}
-	vr.Range = "name"
-	req.Data = append(req.Data, vr)
+	req := &sheets.BatchUpdateValuesRequest{
+		ValueInputOption: "USER_ENTERED",
+		Data:             []*sheets.ValueRange{vr},
+	}
 
 	ss := sheets.NewSpreadsheetsValuesService(srv)
 	_, err = ss.BatchUpdate(sheet, req).Context(ctx).Do()
