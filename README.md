@@ -5,8 +5,11 @@ This code, along with pkdtotext, converts KBC's online statements from PDFs into
 
 ## Dependencies
 
-go get -u google.golang.org/api/sheets/v4
-go get -u golang.org/x/oauth2/...
+```
+% go get -u google.golang.org/api/sheets/v4
+% go get -u golang.org/x/oauth2/...
+% go get github.com/shopspring/decimal
+```
 
 ## Running
 
@@ -54,5 +57,5 @@ I'm not a KBC employee and this is not KBC's code. There is no warranty.
  * create new sheets by hand.
  * CSV /TSV output, to feed into [q](http://harelba.github.io/q/)
  * Real database support.
- * support for turning off `~/..credentials`
+ * Support for turning off `~/.credentials`
 
