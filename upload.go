@@ -9,7 +9,6 @@ import (
 )
 
 func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name string) (int64, error) {
-
 	sheetResp, err := srv.Spreadsheets.Get(sheet).Context(ctx).Do()
 	if err != nil {
 		return 0, err
@@ -27,17 +26,16 @@ func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name strin
 		return id, nil
 	}
 
-	// Does the sheet have a tab?
-	requests := []*sheets.Request{}
-	req := &sheets.Request{}
-	req.AddSheet = &sheets.AddSheetRequest{
-		Properties: &sheets.SheetProperties{
-			Title: name,
-		},
-	}
-	requests = append(requests, req)
 	rb := &sheets.BatchUpdateSpreadsheetRequest{
-		Requests: requests,
+		Requests: []*sheets.Request{
+			&sheets.Request{
+				AddSheet: &sheets.AddSheetRequest{
+					Properties: &sheets.SheetProperties{
+						Title: name,
+					},
+				},
+			},
+		},
 	}
 	resp, err := srv.Spreadsheets.BatchUpdate(sheet, rb).Context(ctx).Do()
 	if err != nil {
@@ -47,23 +45,27 @@ func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name strin
 }
 
 func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows []row, name string) error {
-	_, err := newSheet(ctx, srv, sheet, "test2")
+	_, err := newSheet(ctx, srv, sheet, name)
 	if err != nil {
 		return err
 	}
 	req := &sheets.BatchUpdateValuesRequest{
 		ValueInputOption: "USER_ENTERED",
+		Data: []*sheets.ValueRange{&sheets.ValueRange{
+			MajorDimension: "ROWS",
+			Values: [][]interface{}{
+				{
+					"date",
+					"description",
+					"credit",
+					"debit",
+					"balance",
+					"bucket",
+				}},
+		}},
 	}
-	vr := &sheets.ValueRange{}
-	vr.MajorDimension = "ROWS"
-	headings := []interface{}{
-		"date",
-		"description",
-		"credit",
-		"debit",
-		"balance",
-		"bucket",
-	}
+	vr := &sheets.ValueRange{MajorDimension: "ROWS"}
+	headings := []interface{}{}
 	vr.Values = append(vr.Values, headings)
 	for _, r := range rows {
 		var credit, debit string
@@ -77,7 +79,7 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 
 		rr := []interface{}{
 			r.date.Format("2006/01/02"),
-			r.item,
+			r.description,
 			credit,
 			debit,
 			"€" + r.balance.StringFixed(2),
@@ -85,113 +87,10 @@ func uploadOneFile(ctx context.Context, srv *sheets.Service, sheet string, rows 
 		}
 		vr.Values = append(vr.Values, rr)
 	}
-	vr.Range = "test2"
+	vr.Range = "name"
 	req.Data = append(req.Data, vr)
 
 	ss := sheets.NewSpreadsheetsValuesService(srv)
 	_, err = ss.BatchUpdate(sheet, req).Context(ctx).Do()
-	return err
-}
-
-func uploadOneFileOld(ctx context.Context, srv *sheets.Service, sheet string, rows []row, name string) error {
-	id, err := newSheet(ctx, srv, sheet, "test")
-	if err != nil {
-		return err
-	}
-	requests := []*sheets.Request{}
-	req := &sheets.Request{}
-	var rowData []*sheets.RowData
-	rr := &sheets.RowData{}
-	cd := &sheets.CellData{
-		UserEnteredValue: &sheets.ExtendedValue{
-			StringValue: "date",
-		},
-	}
-	rr.Values = append(rr.Values, cd)
-	cd = &sheets.CellData{
-		UserEnteredValue: &sheets.ExtendedValue{
-			StringValue: "Description",
-		},
-	}
-	rr.Values = append(rr.Values, cd)
-	cd = &sheets.CellData{
-		UserEnteredValue: &sheets.ExtendedValue{
-			StringValue: "Change",
-		},
-	}
-	rr.Values = append(rr.Values, cd)
-	cd = &sheets.CellData{
-		UserEnteredValue: &sheets.ExtendedValue{
-			StringValue: "Balance",
-		},
-	}
-	rr.Values = append(rr.Values, cd)
-	cd = &sheets.CellData{
-		UserEnteredValue: &sheets.ExtendedValue{
-			StringValue: "Bucket",
-		},
-	}
-	rr.Values = append(rr.Values, cd)
-	rowData = append(rowData, rr)
-
-	for i, r := range rows {
-		if i > 10 {
-			break
-		}
-		rr := &sheets.RowData{}
-		cd := &sheets.CellData{
-			UserEnteredValue: &sheets.ExtendedValue{
-				StringValue: r.date.Format("02/01/2006"),
-			},
-			UserEnteredFormat: &sheets.CellFormat{
-				NumberFormat: &sheets.NumberFormat{
-					Type:    "DATE",
-					Pattern: "dd/mm/yyyy",
-				},
-			},
-		}
-
-		rr.Values = append(rr.Values, cd)
-		cd = &sheets.CellData{
-			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.item},
-		}
-		rr.Values = append(rr.Values, cd)
-
-		cd = &sheets.CellData{
-			UserEnteredFormat: &sheets.CellFormat{
-				NumberFormat: &sheets.NumberFormat{
-					Type: "CURRENCY",
-				},
-			},
-			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.diff.StringFixed(2)},
-		}
-		rr.Values = append(rr.Values, cd)
-
-		cd = &sheets.CellData{
-			UserEnteredFormat: &sheets.CellFormat{
-				NumberFormat: &sheets.NumberFormat{
-					Type: "CURRENCY",
-				},
-			},
-			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.balance.StringFixed(2)},
-		}
-		rr.Values = append(rr.Values, cd)
-		cd = &sheets.CellData{
-			UserEnteredValue: &sheets.ExtendedValue{StringValue: r.class},
-		}
-		rr.Values = append(rr.Values, cd)
-
-		rowData = append(rowData, rr)
-	}
-	req.AppendCells = &sheets.AppendCellsRequest{
-		SheetId: id,
-		Rows:    rowData,
-		Fields:  "*",
-	}
-	requests = append(requests, req)
-	rb := &sheets.BatchUpdateSpreadsheetRequest{
-		Requests: requests,
-	}
-	_, err = srv.Spreadsheets.BatchUpdate(sheet, rb).Context(ctx).Do()
 	return err
 }

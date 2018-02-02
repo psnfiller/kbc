@@ -1,8 +1,10 @@
+// Program KBC converts kbc's PDFs into google spreadsheets, and attempts to classify spending.
 package main
 
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,25 +21,37 @@ import (
 )
 
 var (
-	ErrNoMatch   = errors.New("nope")
-	ErrFloat     = errors.New("failed to parse float")
-	re           = regexp.MustCompile(`\f?\s*(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
+	ErrNoMatch = errors.New("Failed to match line.")
+	ErrFloat   = errors.New("failed to parse float")
+
+	re = regexp.MustCompile(`\f?\s*(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
+
 	defaultClass = "unknown"
+
+	sheetID     = flag.String("spreadsheet_id", "", "Id of the google spreadsheet to update")
+	directory   = flag.String("directory", "", "Directory of files to upload")
+	rejectsFile = flag.String("rejects", "", "File to write unmatched lines to. If empty, then no file is used.")
 )
 
 type row struct {
-	date    time.Time
-	item    string
-	change  decimal.Decimal
-	diff    decimal.Decimal
+	// The date the transaction was made, from the statement.
+	date time.Time
+	// Description of the transaction.
+	description string
+	// Recorded change in the amount in the account. This can be either a debit or a credit, but is always >0. This is the result of reading the statement via dodgy regexps.
+	change decimal.Decimal
+	//
+	diff decimal.Decimal
+	// The balance in the account after the txn.
 	balance decimal.Decimal
 	class   string
 }
 
 func (r row) String() string {
-	return fmt.Sprintf("%s\t%s\t%v\t%v", r.date.Format("2006-01-02"), r.item, r.change, r.balance)
+	return fmt.Sprintf("%s\t%s\t%v\t%v", r.date.Format("2006-01-02"), r.description, r.change, r.balance)
 }
 
+// parseLine converts a line into a row, or an error if it can't parse the line.
 func parseLine(line string) (row, error) {
 	out := row{}
 	l := re.FindStringSubmatch(line)
@@ -45,16 +59,15 @@ func parseLine(line string) (row, error) {
 		return out, ErrNoMatch
 	}
 	date := l[1]
-	item := l[2]
+	description := l[2]
 	change := l[3]
 	balance := l[4]
 	d, err := time.Parse("02 Jan 2006", date)
 	if err != nil {
-		log.Print(err, line, date)
 		return out, ErrFloat
 	}
 	out.date = d
-	out.item = strings.TrimSpace(item)
+	out.description = strings.TrimSpace(description)
 	c, err := decomma(change)
 	if err != nil {
 		log.Print(err)
@@ -67,22 +80,27 @@ func parseLine(line string) (row, error) {
 		return out, ErrFloat
 	}
 	out.balance = b
-	out.class = classify(out.item)
+	out.class = classify(out.description)
 	return out, nil
 }
 
+// decomma parses strings like "1,234.44"
 func decomma(in string) (decimal.Decimal, error) {
 	x := strings.Replace(in, ",", "", -1)
 	return decimal.NewFromString(x)
 }
 
-func parseDoc(fd io.Reader) ([]row, error) {
+// parseDoc reads all the lines from fd, and writes lines that don't match the regexp into rejects, if it is non-nil.
+func parseDoc(fd io.Reader, rejects io.Writer) ([]row, error) {
 	var out []row
 	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
 		line := scanner.Text()
 		r, err := parseLine(line)
 		if err == ErrNoMatch {
+			if rejects != nil {
+				rejects.Write([]byte(line))
+			}
 			continue
 		}
 		if err != nil {
@@ -96,14 +114,14 @@ func parseDoc(fd io.Reader) ([]row, error) {
 	return out, nil
 }
 
-func processOneFile(filename string) ([]row, error) {
+func processOneFile(filename string, rejects io.Writer) ([]row, error) {
 	var out []row
 	fd, err := os.Open(filename)
 	defer fd.Close()
 	if err != nil {
 		return out, err
 	}
-	rows, err := parseDoc(fd)
+	rows, err := parseDoc(fd, rejects)
 	if err != nil {
 		return out, err
 	}
@@ -124,20 +142,25 @@ func processOneFile(filename string) ([]row, error) {
 	return rows, nil
 }
 
-var (
-	sheetID = "14TEOrodK2WsY87Y4XVbYLarfRVDYUVyMa6p6GsRNsE4"
-)
-
 func main() {
+	flag.Parse()
 	ctx := context.Background()
 	srv, err := newSrv(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	var rejects io.Writer
+	if *rejectsFile != "" {
+		rejects, err = os.Create(*rejectsFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	//dir := "/Users/psn/Downloads/wat"
 	dir := "/Users/psn/Documents/statements"
-	contents, err := ioutil.ReadDir(dir)
+	contents, err := ioutil.ReadDir(*directory)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -147,18 +170,18 @@ func main() {
 			continue
 		}
 		p := path.Join(dir, c.Name())
-		r, err := processOneFile(p)
+		r, err := processOneFile(p, rejects)
 		if err != nil {
 			log.Fatalf("failed to process %s: %s", c.Name(), err)
 		}
 		rows = append(rows, r...)
-		err = uploadOneFile(ctx, srv, sheetID, rows, c.Name())
+		err = uploadOneFile(ctx, srv, *sheetID, rows, c.Name())
 		if err != nil {
 			log.Fatal(err)
 		}
 		return
 	}
-	err = uploadOneFile(ctx, srv, sheetID, rows, "all")
+	err = uploadOneFile(ctx, srv, *sheetID, rows, "all")
 	if err != nil {
 		log.Fatal(err)
 	}
