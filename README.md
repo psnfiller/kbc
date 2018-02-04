@@ -1,6 +1,6 @@
 # KBC parser.
 
-This code, along with pkdtotext, converts KBC's online statements from PDFs into Google spreadsheets.
+This code, along with pkdtotext, converts KBC's online statements from PDFs into Google spreadsheets or CSV.
 
 
 ## Dependencies
@@ -44,18 +44,21 @@ https://developers.google.com/sheets/api/quickstart/go
 https://godoc.org/google.golang.org/api/sheets/v4
 https://developers.google.com/sheets/api/guides/formats
 
-# Bucketing.
+## Bucketing.
 
 For each expense, I try and classify it into a "bucket", for example food, travel, house, etc. `classify()` does this. As my `classify()` leaks infomation about my spending habits, then I provided an example. You can use `--bucket` to help write your `classify()` - it prints out a) the percentage of credits / debits covered by `classify()` and the highest unclassified expenses.
 
-# Notice.
+## Notice.
 
 I'm not a KBC employee and this is not KBC's code. There is no warranty.
 
-# TODO(psn):
+## CSV
+
+You can output to a CSV file with `--csv foo.csv`. You can then use [q](http://harelba.github.io/q/) on the file.
+
+## TODO(psn):
 
  * create new sheets by hand.
- * CSV /TSV output, to feed into [q](http://harelba.github.io/q/)
  * Real database support.
  * Support for turning off `~/.credentials`
 
