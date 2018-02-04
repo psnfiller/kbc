@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
 	"errors"
 	"flag"
 	"fmt"
@@ -33,6 +34,7 @@ var (
 	rejectsFile  = flag.String("rejects", "", "File to write unmatched lines to. If empty, then no file is used.")
 	printBuckets = flag.Bool("buckets", false, "If true, print out spending per bucket and top unclassified expenses.")
 	bucketCutOff = flag.Float64("bucket-cut-off", 5., "only print expenses above this value")
+	csvFile      = flag.String("csv", "", "CSV output file.")
 )
 
 func validateFlags() error {
@@ -201,7 +203,33 @@ func main() {
 	if *printBuckets {
 		buckets(rows)
 	}
+	if *csvFile != "" {
+		fd, err := os.Create(*csvFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := csvExport(rows, fd); err != nil {
+			log.Fatal(err)
+		}
+	}
 }
+
+func csvExport(rows []row, fd io.Writer) error {
+	ww := csv.NewWriter(fd)
+	for _, r := range rows {
+
+		if err := ww.Write([]string{
+			r.date.Format("2006/01/02"),
+			r.description,
+			fmt.Sprintf("%f", r.diff),
+			fmt.Sprintf("%f", r.balance),
+			r.class}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func buckets(rows []row) {
 	var sum decimal.Decimal
 	var classified decimal.Decimal
