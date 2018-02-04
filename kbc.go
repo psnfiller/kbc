@@ -41,9 +41,6 @@ func validateFlags() error {
 	if *directory == "" {
 		return errors.New("you need to provide a directory, with --directory")
 	}
-	if *sheetID == "" {
-		return errors.New("you need to provide a spreadsheet_id, with --spreadsheet_id")
-	}
 	return nil
 }
 
@@ -191,14 +188,18 @@ func main() {
 			log.Fatalf("failed to process %s: %s", c.Name(), err)
 		}
 		rows = append(rows, r...)
-		err = uploadOneFile(ctx, srv, *sheetID, rows, c.Name())
+		if *sheetID != "" {
+			err = uploadOneFile(ctx, srv, *sheetID, rows, c.Name())
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+	if *sheetID != "" {
+		err = uploadOneFile(ctx, srv, *sheetID, rows, "all")
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-	err = uploadOneFile(ctx, srv, *sheetID, rows, "all")
-	if err != nil {
-		log.Fatal(err)
 	}
 	if *printBuckets {
 		buckets(rows)
@@ -221,8 +222,8 @@ func csvExport(rows []row, fd io.Writer) error {
 		if err := ww.Write([]string{
 			r.date.Format("2006/01/02"),
 			r.description,
-			fmt.Sprintf("%f", r.diff),
-			fmt.Sprintf("%f", r.balance),
+			fmt.Sprintf("%s", r.diff),
+			fmt.Sprintf("%s", r.balance),
 			r.class}); err != nil {
 			return err
 		}
