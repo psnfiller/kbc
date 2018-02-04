@@ -217,8 +217,16 @@ func main() {
 
 func csvExport(rows []row, fd io.Writer) error {
 	ww := csv.NewWriter(fd)
+	if err := ww.Write([]string{
+		"date",
+		"description",
+		"diff",
+		"balance",
+		"class",
+	}); err != nil {
+		return err
+	}
 	for _, r := range rows {
-
 		if err := ww.Write([]string{
 			r.date.Format("2006/01/02"),
 			r.description,
