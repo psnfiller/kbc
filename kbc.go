@@ -230,8 +230,8 @@ func csvExport(rows []row, fd io.Writer) error {
 		if err := ww.Write([]string{
 			r.date.Format("2006-01-02"),
 			r.description,
-			fmt.Sprintf("%s", r.diff),
-			fmt.Sprintf("%s", r.balance),
+			r.diff.StringFixed(2),
+			r.balance.StringFixed(2),
 			r.class}); err != nil {
 			return err
 		}
