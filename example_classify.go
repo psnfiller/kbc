@@ -7,6 +7,6 @@ func exampleClassify(in string) string {
 	case strings.Contains(in, "AMAZON"):
 		return "Amazon"
 	default:
-		return defaultClass
+		return defaultOut
 	}
 }

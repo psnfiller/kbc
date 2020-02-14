@@ -56,9 +56,22 @@ I'm not a KBC employee and this is not KBC's code. There is no warranty.
 
 You can output to a CSV file with `--csv foo.csv`. You can then use [q](http://harelba.github.io/q/) on the file.
 
+### Q
+
+```
+q -H -d, 'select class, sum(diff) from ./out.csv group by class order by 2 desc'
+```
+
+q -H -d, 'select sum(diff) from ./out.csv where diff < 0 and class = "unknown"'
+
+
 ## TODO(psn):
 
  * create new sheets by hand.
  * Real database support.
  * Support for turning off `~/.credentials`
 
+
+#
+csv.Writer
+\csv.Writer

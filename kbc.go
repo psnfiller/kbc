@@ -27,7 +27,8 @@ var (
 
 	re = regexp.MustCompile(`\f?\s*(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
 
-	defaultClass = "unknown"
+	defaultOut   = "unknown"
+	defaultClass = "in unknown"
 
 	sheetID      = flag.String("spreadsheet_id", "", "Id of the google spreadsheet to update")
 	directory    = flag.String("directory", "", "Directory of files to upload")
@@ -91,7 +92,7 @@ func parseLine(line string) (row, error) {
 		return out, ErrFloat
 	}
 	out.balance = b
-	out.class = classify(out.description)
+	out.class = classify(out.description, out.change)
 	return out, nil
 }
 
@@ -149,6 +150,9 @@ func processOneFile(filename string, rejects io.Writer) ([]row, error) {
 			return rows, fmt.Errorf("failed to do diff %s %s %s %s", r, diff, r.change, invert)
 		}
 		rows[i].diff = diff
+		if diff.IsNegative() && rows[i].class == defaultClass {
+			rows[i].class = defaultOut
+		}
 		balance = r.balance
 	}
 	return rows, nil
@@ -177,16 +181,19 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("cloud")
 	var rows []row
 	for _, c := range contents {
 		if !strings.HasSuffix(c.Name(), ".txt") {
 			continue
 		}
 		p := path.Join(*directory, c.Name())
+		fmt.Println("cloud")
 		r, err := processOneFile(p, rejects)
 		if err != nil {
 			log.Fatalf("failed to process %s: %s", c.Name(), err)
 		}
+		fmt.Println("cloud")
 		rows = append(rows, r...)
 		if *sheetID != "" {
 			err = uploadOneFile(ctx, srv, *sheetID, rows, c.Name())
@@ -195,6 +202,7 @@ func main() {
 			}
 		}
 	}
+	fmt.Println("cloud")
 	if *sheetID != "" {
 		err = uploadOneFile(ctx, srv, *sheetID, rows, "all")
 		if err != nil {
@@ -236,7 +244,8 @@ func csvExport(rows []row, fd io.Writer) error {
 			return err
 		}
 	}
-	return nil
+	ww.Flush()
+	return ww.Error()
 }
 
 func buckets(rows []row) {
@@ -245,12 +254,12 @@ func buckets(rows []row) {
 	// Group the expenses into buckets.
 	buckets := make(map[string]decimal.Decimal)
 	for _, r := range rows {
-		if r.change.GreaterThan(decimal.NewFromFloat(*bucketCutOff)) && r.class == defaultClass {
+		if r.change.GreaterThan(decimal.NewFromFloat(*bucketCutOff)) && r.class == defaultOut {
 			// Print items in the default bucket, if greater than cutoff.
 			fmt.Println(r)
 		}
 		sum = sum.Add(r.change)
-		if r.class != defaultClass {
+		if r.class != defaultOut || r.class != defaultClass {
 			classified = classified.Add(r.change)
 		}
 		b := buckets[r.class]
