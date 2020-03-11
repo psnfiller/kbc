@@ -14,7 +14,7 @@ func newSheet(ctx context.Context, srv *sheets.Service, sheet string, name strin
 	fmt.Println("newS")
 	sheetResp, err := srv.Spreadsheets.Get(sheet).Context(ctx).Do()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Get(%q) failed: %v", sheet, err)
 	}
 	fmt.Println("newS")
 	found := false
