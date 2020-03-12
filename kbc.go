@@ -24,8 +24,12 @@ import (
 var (
 	ErrNoMatch = errors.New("Failed to match line.")
 	ErrFloat   = errors.New("failed to parse float")
+	ErrTime    = errors.New("failed to parse Time")
 
-	re = regexp.MustCompile(`\f?\s*(\d\d [A-Z][a-z]{2} 201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
+	//03 Apr 2017     POS GITHUB.COM DFMK 20170329                    6.51                                  3,947.28
+	// Deposit statements look different:
+	// 01/01/2015       Opening Balance
+	re = regexp.MustCompile(`\f?\s*(\d\d[/ ]([A-Z][a-z]{2}|\d+)[/ ]201\d)\s+(.*)\s\s+([,0-9]+\.\d+)\s\s+([,0-9]+\.\d+)`)
 
 	defaultOut   = "unknown"
 	defaultClass = "in unknown"
@@ -71,12 +75,17 @@ func parseLine(line string) (row, error) {
 		return out, ErrNoMatch
 	}
 	date := l[1]
-	description := l[2]
-	change := l[3]
-	balance := l[4]
+	// TODO(psn):
+	description := l[3]
+	change := l[4]
+	balance := l[5]
 	d, err := time.Parse("02 Jan 2006", date)
 	if err != nil {
-		return out, ErrFloat
+		// Try the other format
+		d, err = time.Parse("02/01/2006", date)
+		if err != nil {
+			return out, ErrTime
+		}
 	}
 	out.date = d
 	out.description = strings.TrimSpace(description)
